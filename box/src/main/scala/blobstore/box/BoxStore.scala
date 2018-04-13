@@ -71,7 +71,7 @@ case class BoxStore[F[_]](api: BoxAPIConnection, rootFolderId: String)(implicit 
   override def list(path: Path): fs2.Stream[F, Path] = {
     for {
       itemOpt <- Stream.eval(F.delay(boxItemAtPath(path)))
-      item <- itemOpt.foldMap[Stream[F,BoxItem]](Stream.emit(_))
+      item <- itemOpt.foldMap(Stream.emit(_)).covary
 
       listFiles = Stream.eval(F.delay(item.asInstanceOf[BoxFolder]))
           .flatMap(folder => Stream.fromIterator(folder.getChildren.iterator.asScala))
